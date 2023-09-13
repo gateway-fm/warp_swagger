@@ -53,7 +53,7 @@ func UnwrapAst(file *ast.File) {
 	for i := range file.Decls {
 
 		d := file.Decls[i]
-		switch d.(type) { //nolint:gocritic
+		switch d.(type) { //nolint:all
 		case *ast.FuncDecl: //nolint:gocritic
 		case *ast.GenDecl: //nolint:gocritic
 			dd := d.(*ast.GenDecl).Specs
@@ -61,7 +61,7 @@ func UnwrapAst(file *ast.File) {
 
 				spc := dd[ii]
 
-				switch spc.(type) { //nolint:gocritic
+				switch spc.(type) { //nolint:all
 				case *ast.ImportSpec: //nolint:gocritic
 				case *ast.ValueSpec: //nolint:gocritic
 				case *ast.TypeSpec: //nolint:gocritic
@@ -70,7 +70,7 @@ func UnwrapAst(file *ast.File) {
 					for iii := range list {
 						for namesIdx := range list[iii].Names {
 							expression := list[iii].Type
-							switch expression.(type) { //nolint:gocritic
+							switch expression.(type) { //nolint:all
 							case *ast.ArrayType:
 								arrPart := expression.(*ast.ArrayType).Elt //nolint:gosimple
 								arrString := fmt.Sprintf("%v", arrPart)
