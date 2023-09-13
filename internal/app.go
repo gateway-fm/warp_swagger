@@ -49,6 +49,9 @@ func (app *App) prepareTemplates() error {
 	//   *******************-- TO DO --********************* //
 
 	templates, err := warp_generator.Templates(app.WarpCfg(), simpleNames, simpleTypes, customNames, customTypes)
+	if err != nil {
+		return fmt.Errorf("%w", err)
+	}
 	app.templates = templates
 	return nil
 }
