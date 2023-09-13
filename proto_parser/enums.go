@@ -1,4 +1,4 @@
-package proto_parser
+package proto_parser //nolint:revive
 
 import (
 	"errors"
@@ -24,7 +24,7 @@ const (
 	ProtoString
 	ProtoBytes
 
-	//   CustomProtoType
+	// CustomProtoType
 	/*
 		message CustomMsg{
 			string someString = 1;

@@ -1,4 +1,4 @@
-package config_swagger
+package config_swagger //nolint:revive
 
 import "github.com/go-openapi/spec"
 

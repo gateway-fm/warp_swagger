@@ -1,4 +1,4 @@
-package warp_generator
+package warp_generator //nolint:revive
 
 import (
 	"fmt"

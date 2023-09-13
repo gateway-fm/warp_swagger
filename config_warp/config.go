@@ -1,4 +1,4 @@
-package config_warp
+package config_warp //nolint:revive
 
 type Warp struct {
 	External *ExternalPkg

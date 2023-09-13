@@ -1,4 +1,4 @@
-package external_packages
+package external_packages //nolint:revive
 
 import (
 	"errors"
