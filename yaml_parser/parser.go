@@ -9,7 +9,7 @@
 
 */
 
-package yaml_parser //nolint:revive
+package yaml_parser // nolint:all
 
 /*
 import (

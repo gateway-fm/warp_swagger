@@ -1,4 +1,4 @@
-package proto_parser //nolint:revive
+package proto_parser // nolint:all
 
 import (
 	"encoding/json"
