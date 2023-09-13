@@ -1,9 +1,7 @@
 package templater
 
 func GetTemplateInterfaces(iface ...any) (ifaces []any) {
-	for i := range iface {
-		ifaces = append(ifaces, iface[i])
-	}
+	ifaces = append(ifaces, iface...)
 	return ifaces
 }
 func CompleteFuncMap(names []string, a []any) map[string]any {

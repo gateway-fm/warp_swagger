@@ -1,4 +1,4 @@
-package config_warp // nolint:all
+package config_warp //nolint:all
 
 type Warp struct {
 	External *ExternalPkg

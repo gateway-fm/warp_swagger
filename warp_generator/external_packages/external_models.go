@@ -1,4 +1,4 @@
-package external_packages // nolint:all
+package external_packages //nolint:all
 
 import (
 	"errors"

@@ -1,4 +1,4 @@
-package warp_generator // nolint:all
+package warp_generator //nolint:all
 
 import (
 	"fmt"

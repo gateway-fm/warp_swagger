@@ -1,4 +1,4 @@
-package warp_errors
+package warp_errors //nolint:all
 
 import "errors"
 

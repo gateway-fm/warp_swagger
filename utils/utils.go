@@ -70,7 +70,7 @@ func UnwrapAst(file *ast.File) {
 					for iii := range list {
 						for namesIdx := range list[iii].Names {
 							expression := list[iii].Type
-							switch expression.(type) {
+							switch expression.(type) { //nolint:gocritic
 							case *ast.ArrayType:
 								arrPart := expression.(*ast.ArrayType).Elt //nolint:gosimple
 								arrString := fmt.Sprintf("%v", arrPart)

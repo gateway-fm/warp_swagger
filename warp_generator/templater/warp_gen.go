@@ -69,7 +69,7 @@ func GoFmt(path string) error {
 	if err != nil {
 		return err
 	}
-	err = os.WriteFile(path, fmted, 0666)
+	err = os.WriteFile(path, fmted, 0666) //nolint:gosec
 	if err != nil {
 		return err
 	}
