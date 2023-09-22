@@ -7,7 +7,7 @@ type Warp struct {
 }
 type ExternalPkg struct {
 	Models      []*Models
-	ModelsType  string
+	MsgModel    string
 	PackageName string
 	ProtoName   string
 	ProtoPath   string
