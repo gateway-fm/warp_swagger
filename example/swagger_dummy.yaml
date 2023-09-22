@@ -1,246 +1,229 @@
-########    Solarsteinn API #########
-swagger: '2.0'
+swagger: "2.0"
 info:
-  description: "TODO"
-  version: 1.0.0
-  title: "Solarsteinn"
+  version: "1.0.0"
+  title: "Fashion Space"
+  description: "Bla bla bla"
+  termsOfService: ""
   contact:
-    email: infra@gateway.fm
+    name: "Misnaged"
   license:
     name: "MIT"
+
 basePath: "/"
 schemes:
-  - https
-  - http
+  - "http"
 consumes:
-  - application/json
+  - "application/json"
 produces:
-  - application/json
+  - "application/json"
 
+securityDefinitions:
+  #    jwt:
+  #      type: apiKey
+  #      in: header
+  #      name: Bearer
+  OauthSecurity:
+    type: oauth2
+    flow: accessCode
+    authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth'
+    tokenUrl: 'https://www.googleapis.com/oauth2/v4/token'
 
-########### Paths section ############
+#  security: [ ]
+
 paths:
-  /{org}/requests:
+  /shops/{name}:
     parameters:
-      - $ref: '#/parameters/org'
-      - $ref: '#/parameters/from'
-      - $ref: '#/parameters/to'
-      - $ref: '#/parameters/chain'
-      - $ref: '#/parameters/apiKey'
-      - $ref: '#/parameters/limit'
-      - $ref: '#/parameters/offset'
+      - $ref: '#/parameters/name'
     get:
       tags:
-        - requests
-      operationId: getRequests
-      description: get Requests details
+        - shops
+      operationId: getShop
+      description: get Shop details
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/shop'
+        default:
+          $ref: '#/responses/errorResponse'
+  /matches/list:
+    get:
+      security:
+        - jwt: []
+      tags:
+        - matches
+      operationId: listMatches
+      description: get matches list for choosen date (default today)
+      parameters:
+        - name: date
+          description: date filter (string format)
+          in: query
+          type: string
+          format: date
       responses:
         200:
           description: OK
           schema:
             type: array
             items:
-              $ref: '#/definitions/requests'
+              $ref: '#/definitions/match'
         default:
           $ref: '#/responses/errorResponse'
-
-  /{org}/daily:
+  /shops/{name}/create_stock_item:
     parameters:
-      - $ref: '#/parameters/org'
-      - $ref: '#/parameters/from'
-      - $ref: '#/parameters/to'
-      - $ref: '#/parameters/chain'
-      - $ref: '#/parameters/apiKey'
-      - $ref: '#/parameters/limit'
-      - $ref: '#/parameters/offset'
-    get:
+      - $ref: '#/parameters/name'
+    post:
+      #        security:
+      #          - jwt: [ ]
       tags:
-        - daily
-      operationId: getDaily
-      description: get daily requests details
+        - shops
+        - stocks
+      operationId: createStockItem
+      description: create new stock item
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/newStockItemRequest'
       responses:
         200:
           description: OK
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/daily'
         default:
           $ref: '#/responses/errorResponse'
 
+#      put:
+#        security:
+#          - jwt: [ ]
+#        tags:
+#          - battles
+#        operationId: updateBattle
+#        description: update battle by uuid
+#        parameters:
+#          - name: data
+#            in: body
+#            required: true
+#            schema:
+#              $ref: '#/definitions/editBattleRequest'
+#        responses:
+#          200:
+#            description: OK
+#            schema:
+#              $ref: '#/definitions/battle'
+#          default:
+#            $ref: '#/responses/errorResponse'
 
-########### Parameters section ############
+
 parameters:
-  org:
-    description: Organization identifier.
-    type: string
-    name: org
-    required: true
+  name:
+    description: models name getter
     in: path
-  from:
-    description: Start date for filtering analytics. If not included, retrieves all analytics from the beginning.
-    name: from
-    required: false
-    type: integer
-    format: 'date-time'
-    in: query
-  to:
-    description: End date for filtering analytics. If not included, retrieves analytics up to the latest.
-    required: false
-    type: integer
-    format: 'date-time'
-    name: to
-    in: query
-  chain:
-    description: Chain identifier for filtering analytics.
-    required: false
+    name: name
+    required: true
     type: string
-    name: chain
-    in: query
-  apiKey:
-    description: API key for filtering analytics.
-    required: false
+  token:
+    description: email token vor verify user
+    in: path
+    name: token
+    required: true
     type: string
-    name: apiKey
-    in: query
-  limit:
-    description: Number of records to retrieve per page for pagination. Default is set by the server.
-    type: integer
-    default: 1
-    required: false
-    name: limit
-    in: query
-  offset:
-    description: Starting point for records retrieval for pagination. Default is 0.
-    type: integer
-    default: 0
-    name: offset
-    required: false
-    in: query
+  socialProvider:
+    in: path
+    required: true
+    name: provider
+    description: >
+      available oAUTH social providers:
+        * facebook
+        * twitter
+        * google
+    type: string
+    enum:
+      - facebook
+      - twitter
+      - google
 
 
-########### Responses section ############
 responses:
   errorResponse:
     description: Error
     schema:
       $ref: '#/definitions/error'
 
-
-
-########### Definitions section ############
 definitions:
-  daily:
-    description: shop model
+  newStockItemRequest:
+    description: request for create new stock item
     type: object
     properties:
-      clientID:
-        type: string
-        description: ID of the client making the request.
-      org:
-        type: string
-        description: Organization identifier.
-      date:
-        type: string
-        format: date-time
-        description: Date of the analytics data.
-      count:
-        type: integer
-        format: int32
-        description: Count of the requests.
-      chain:
-        type: string
-        description: Chain identifier.
-    required:
-      - clientID
-      - org
-      - date
-      - count
-      - chain
-  requests:
-    description: shop model
-    type: object
-    properties:
-      id:
+      uuid:
+        description: stock uuid
         type: string
         format: uuid
-        description: Unique identifier for the request.
-      requestId:
+      title:
+        description: item's title
         type: string
-        description: Request ID.
-      clientId:
+        example: Velvet Bodysuit
+      description:
+        description: item's description
         type: string
-        description: Client ID making the request.
-      clientIp:
+        example: bodysuit made from velvet
+      brand:
+        description: item's brand
         type: string
-        description: IP address of the client making the request.
-      chain:
+        example: gucci
+      price:
+        description: item's price
+        type: number
+        format: float64
+        example: 199.99
+      stock_type:
+        description: from what part of wardrobe this item is
         type: string
-        description: Chain identifier.
-      org:
+        example: Suit
+      source:
+        description: ...
         type: string
-        description: Organization identifier.
-      requestType:
-        type: string
-        description: Type of the request.
-      requestBundle:
-        type: boolean
-        description: Indicates if the request is bundled.
-      requestBody:
-        type: string
-        format: byte
-        description: Body of the request.
-      responseBody:
-        type: string
-        format: byte
-        description: Body of the response.
-      method:
-        type: string
-        description: RPC method used in the request.
-      status:
-        type: string
-        description: Status of the request.
-      error:
-        type: string
-        description: Error message for failed requests.
-      errorCode:
-        type: integer
-        format: int32
-        description: Error code for failed requests.
-      createdAt:
-        type: string
-        format: date-time
-        description: Timestamp of when the request was created.
-      updatedAt:
-        type: string
-        format: date-time
-        description: Timestamp of when the request was last updated.
-      latency:
-        type: integer
-        format: int64
-        description: Time it took for the request to complete.
-      transport:
-        type: string
-        description: Transport method used for the request.
+        example: ...
     required:
-      - id
-      - requestId
-      - clientId
-      - clientIp
-      - chain
-      - org
-      - requestType
-      - requestBundle
-      - requestBody
-      - responseBody
-      - method
-      - status
-      - error
-      - errorCode
-      - createdAt
-      - updatedAt
-      - latency
-      - transport
+      - title
+      - source
+      - price
+      - description
+      - stock_type
+      - brand
+
+  shop:
+    description: shop model
+    type: object
+    properties:
+      uuid:
+        description: shop uuid
+        type: string
+        format: uuid
+        example: e0527b4c-926c-4a3f-8849-b7c4d9c348ca
+      name:
+        description: shop name
+        type: string
+        example: blablastore
+      #        creator:
+      #          description: battle creator
+      #          $ref: '#/definitions/userShort'
+      description:
+        description: shop description
+        type: string
+        example: blabla is good store
+      #        is_premium:
+      #          description: is this battle premium?
+      #          type: boolean
+      #          example: false
+      url:
+        description: shops urls
+        type: string
+        format: uri
+    required:
+      - uuid
+      - name
+      - description
+      - url
   error:
     description: the error model uses for all error responses
     type: object
@@ -262,5 +245,30 @@ definitions:
     required:
       - message
       - code
+  match:
+    description: math model
+    type: object
+    properties:
+      uuid:
+        description: match UUID
+        type: string
+        format: uuid
+      title:
+        description: match title with contestants squads
+        type: string
+      datetime:
+        description: datetime timestamp
+        type: integer
+        format: 'date-time'
+      competition:
+        description: match related competition
+        type: string
+      stadium:
+        description: match stadium
+        type: string
+    required:
+      - uuid
+      - title
+      - datetime
 
-###########        END           ############
+
