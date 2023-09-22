@@ -1,0 +1,31 @@
+{{define "external_pkg_models"}}
+    package models
+
+    import (
+
+    proto "{{PackageURL}}/{{ProtoPath}}"
+
+    )
+
+     type {{PkgNameUC}}Daily struct{
+        {{ range Daily}} {{ . }}
+            {{end}}
+    }
+
+    type {{PkgNameUC}}Requests struct{
+    {{ range Requests}} {{ . }}
+    {{end}}
+    }
+
+    func {{PkgNameUC}}RequestsFromProto(pb *proto.{{ProtoName}}) *{{PkgNameUC}}{
+
+    }
+    func {{PkgNameUC}}DailyFromProto(pb *proto.{{ProtoName}}) *{{PkgNameUC}}{
+
+    }
+
+
+    func {{PkgNameUC}}ToProto(){}
+
+
+{{end}}

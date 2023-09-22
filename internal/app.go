@@ -7,6 +7,7 @@ import (
 	"github.com/gateway-fm/warp_swagger/proto_parser"
 	"github.com/gateway-fm/warp_swagger/swagger"
 	"github.com/gateway-fm/warp_swagger/warp_generator"
+	"github.com/gateway-fm/warp_swagger/warp_generator/external_packages"
 	"github.com/gateway-fm/warp_swagger/warp_generator/templater"
 )
 
@@ -36,7 +37,7 @@ func NewApplication() (app *App, err error) {
 func (app *App) CallDummy() error {
 	d := swagger.NewDummy()
 
-	err := d.Call()
+	err := d.Call("swagger/swagger.yaml")
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}
@@ -51,34 +52,45 @@ func (app *App) SwaggerGenerate(args []string) error {
 	}
 	return nil
 }
+
+func ProtoMessageUnwrap(parsed []*proto_parser.ParsedMsg) ([]string, error) {
+	var protoMessage []string
+	var n, t []string
+	for i := range parsed {
+		n = append(n, parsed[i].ParsedNames)
+		t = append(t, parsed[i].ParsedTypes)
+	}
+	protoMessage, err := external_packages.Merge(n, t)
+	if err != nil {
+		return nil, fmt.Errorf("failed to merge names and types:%w", err)
+	}
+	return protoMessage, nil
+}
+
 func (app *App) prepareTemplates() error {
 	if err := app.CallDummy(); err != nil {
 		return fmt.Errorf("failed to call dummy: %w", err)
 	}
 	protoParser := proto_parser.NewIProtoParser()
-	// fmt.Println(app.WarpCfg().External.ProtoPath)
-
-	primitive, custom, err := protoParser.Parse(app.WarpCfg().External.ProtoPath)
+	requestModels, err := protoParser.Parse(app.WarpCfg().External.ProtoPath, "FetchedReqModelProto") // TODO   H A R D C O D E D ! ! !
 	if err != nil {
 		return fmt.Errorf("PrepareTemplates returned an error:%w", err)
 	}
 
-	//  TODO: refactor: get rid off ***simpleNames, simpleTypes, customNames, customTypes []string***
-	//   using something  similar to []*ParsedMsg is preferable
-	var simpleNames, simpleTypes, customNames, customTypes []string
-
-	for i := range primitive {
-		simpleNames = append(simpleNames, primitive[i].ParsedNames)
-		simpleTypes = append(simpleTypes, primitive[i].ParsedTypes)
-	}
-	for i := range custom {
-		customNames = append(customNames, custom[i].ParsedNames)
-		customTypes = append(customTypes, custom[i].ParsedTypes)
+	dailyModels, err := protoParser.Parse(app.WarpCfg().External.ProtoPath, "DailyModelsProto")
+	if err != nil {
+		return fmt.Errorf("PrepareTemplates returned an error:%w", err)
 	}
 
-	//   *******************-- TO DO --********************* //
-
-	templates, err := warp_generator.Templates(app.WarpCfg(), simpleNames, simpleTypes, customNames, customTypes, app.dummy.GetHandlersModel())
+	daily, err := ProtoMessageUnwrap(dailyModels)
+	if err != nil {
+		return fmt.Errorf("failed to get daily proto message %w", err)
+	}
+	requests, err := ProtoMessageUnwrap(requestModels)
+	if err != nil {
+		return fmt.Errorf("failed to get daily proto message %w", err)
+	}
+	templates, err := warp_generator.Templates(app.WarpCfg(), daily, requests, app.dummy.GetHandlersModel())
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}

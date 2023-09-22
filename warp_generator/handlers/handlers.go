@@ -13,7 +13,7 @@ func GenerateHandlers(
 	config *config_warp.Warp,
 	operationPath string,
 ) (templater.ITemplate, error) {
-	path := "templates/internal/handler_template.gohtml"
+	path := "templates/internal_handlers.gohtml"
 
 	var OperationIDuc = func() string {
 		return inflect.Capitalize(operation.OperationID)
@@ -43,7 +43,7 @@ func GenerateHandlers(
 	funcMap := templater.CompleteFuncMap(funcNames, funcs)
 	elems := "handler_main"
 	ifaces := templater.GetTemplateInterfaces(operation)
-	output := fmt.Sprintf("internal/handlers/%s", operation.OutputFileName) //todo: remove hardcode
+	output := fmt.Sprintf("internal/handlers/%s", operation.OutputFileName)
 	template := templater.NewTemplate(path, output, ifaces, funcMap, elems)
 	return template, nil
 }

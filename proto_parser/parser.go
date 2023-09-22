@@ -2,22 +2,24 @@ package proto_parser //nolint:all
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/yoheimuta/go-protoparser/v4"
 	"os"
 )
 
 type IProtoParser interface {
-	Parse(path string) ([]*ParsedMsg, []*ParsedMsg, error)
+	Parse(path string, selectedMsg string) ([]*ParsedMsg, error)
 }
 
 func NewIProtoParser() IProtoParser {
-	return &parser{}
+	return &parser{MapProto: make(map[string][]*MessageBody)}
 }
 
 type parser struct {
 	ParsedCustom []*ParsedMsg
 	ParsedSimple []*ParsedMsg
+	MapProto     map[string][]*MessageBody
 }
 type ParsedMsg struct {
 	IsCustom                 bool
@@ -38,39 +40,45 @@ type MessageBody struct {
 	Type       string `json:"Type"`
 }
 
-func newParsedMsg(t, n string, custom bool) *ParsedMsg {
+func newParsedMsg(name, tYpe string, custom bool) *ParsedMsg {
 	return &ParsedMsg{
 		IsCustom:    custom,
-		ParsedNames: n,
-		ParsedTypes: t,
+		ParsedNames: name,
+		ParsedTypes: tYpe,
 	}
 }
-func (p *parser) Parse(path string) ([]*ParsedMsg, []*ParsedMsg, error) {
-	parsedNames, parsedTypes, err := p.parse(path)
-	if err != nil {
-		return nil, nil, fmt.Errorf("failed while parsing, %w", err)
+func (p *parser) Parse(path string, selectedMsg string) ([]*ParsedMsg, error) {
+	if err := p.parse(path); err != nil {
+		return nil, fmt.Errorf("failed while parsing, %w", err)
 	}
-	if len(parsedTypes) != len(parsedNames) {
-		return nil, nil, ErrLenNotEqual
+	var parsedMessage []*ParsedMsg
+	if len(p.MapProto) == 0 {
+		return nil, errors.New("p.MapProto is empty")
 	}
-	var simpleTypes []*ParsedMsg
-	var customTypes []*ParsedMsg
-	for i := range parsedTypes {
-		ppType := ParseProtoType(parsedTypes[i])
-		switch ppType {
-		case CustomProtoType:
-			customTypes = append(customTypes, newParsedMsg(parsedTypes[i], parsedNames[i], true))
-		default:
-			simpleTypes = append(simpleTypes, newParsedMsg(parsedTypes[i], parsedNames[i], true))
+	for msgName, msgBody := range p.MapProto {
+		if msgName == selectedMsg {
+			for i := range msgBody {
+				if len(msgBody) == 0 {
+					return nil, errors.New("msgBody is empty")
+				}
+				ppType := ParseProtoType(msgBody[i].Type)
+				switch ppType {
+				case CustomProtoType:
+					parsedMessage = append(parsedMessage, newParsedMsg(parsedMessage[i].ParsedNames, parsedMessage[i].ParsedTypes, true))
+				default:
+
+					parsedMessage = append(parsedMessage, newParsedMsg(msgBody[i].FieldName, msgBody[i].Type, false))
+				}
+			}
 		}
 	}
-	return simpleTypes, customTypes, nil
+
+	return parsedMessage, nil
 }
-func (p *parser) parse(path string) ([]string, []string, error) {
-	var parsedNames, parsedTypes []string
+func (p *parser) parse(path string) error {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to open proto file: %w", err)
+		return fmt.Errorf("failed to open proto file: %w", err)
 	}
 	defer file.Close()
 	got, err := protoparser.Parse(
@@ -78,24 +86,19 @@ func (p *parser) parse(path string) ([]string, []string, error) {
 		protoparser.WithFilename(file.Name()),
 	)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to parse %w", err)
+		return fmt.Errorf("failed to parse %w", err)
 	}
-
 	var model *Body
 	gotJSON, err := json.MarshalIndent(got, "", "  ")
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to marshal %w", err)
+		return fmt.Errorf("failed to marshal %w", err)
 	}
 	err = json.Unmarshal(gotJSON, &model)
 	if err != nil {
-		return nil, nil, fmt.Errorf("failed to unmarshal %w", err)
+		return fmt.Errorf("failed to unmarshal %w", err)
 	}
 	for i := range model.ProtoBody {
-		for ii := range model.ProtoBody[i].MessageBody {
-			// fmt.Printf("%s %s \n", model.ProtoBody[i].MessageBody[ii].FieldName, model.ProtoBody[i].MessageBody[ii].Type)
-			parsedNames = append(parsedNames, model.ProtoBody[i].MessageBody[ii].FieldName)
-			parsedTypes = append(parsedTypes, model.ProtoBody[i].MessageBody[ii].Type)
-		}
+		p.MapProto[model.ProtoBody[i].MessageName] = model.ProtoBody[i].MessageBody
 	}
-	return parsedNames, parsedTypes, nil
+	return nil
 }

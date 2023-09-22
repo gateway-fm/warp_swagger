@@ -15,59 +15,61 @@ func ModelsFunc(m ...string) func() []string {
 	}
 	return foo
 }
-
-func GenerateExternalModels(
-	config *config_warp.Warp,
-	simpleNames, simpleTypes, customNames, customTypes []string,
-) (templater.ITemplate, error) {
-	path := "templates/pkg/models/external_pkg_models.gohtml"
-
-	ProtosModelStruct := struct {
-		SimpleNames, SimpleTypes, CustomNames, CustomTypes []string
-	}{
-		SimpleNames: simpleNames,
-		SimpleTypes: simpleTypes,
-		CustomNames: customNames,
-		CustomTypes: customTypes,
-	}
-	//   TODO: handle custom Names&Types!
-
-	pkgModels, err := mergeWithNames(ProtosModelStruct.SimpleNames, ProtosModelStruct.SimpleTypes)
+func Merge(names, types []string) ([]string, error) {
+	pkgModels, err := mergeWithNames(names, types)
 	if err != nil {
 		return nil, fmt.Errorf("failed while merging: %w", err)
 	}
+	return pkgModels, nil
+}
+
+func GenerateExternalModels(
+	config *config_warp.Warp,
+	daily, requests []string,
+) (templater.ITemplate, error) {
+	path := "./templates/external_pkg_models.gohtml"
+
 	var PkgNameUC = func() string {
 		return config.External.PackageName
 	}
 	var ProtoName = func() string {
 		return config.External.ProtoName
 	}
+	var ProtoPath = func() string {
+		return config.External.ProtoPath
+	}
 	var PackageURL = func() string {
 		return config.External.PackageURL
 	}
-	var PkgModels = func() []string {
-		return pkgModels
+	var Daily = func() []string {
+		return daily
 	}
-	for i := range pkgModels {
-		fmt.Println(pkgModels[i])
+	var Requests = func() []string {
+		return requests
 	}
+
 	var funcNames = []string{
 		"PkgNameUC",
 		"ProtoName",
+		"ProtoPath",
 		"PackageURL",
-		"PkgModels",
+		"Daily",
+		"Requests",
 	}
 
 	funcs := templater.GetTemplateInterfaces(
 		PkgNameUC,
 		ProtoName,
+		ProtoPath,
 		PackageURL,
-		PkgModels,
+		Daily,
+		Requests,
 	)
 	funcMap := templater.CompleteFuncMap(funcNames, funcs)
 	elems := "external_pkg_models"
-	ifaces := templater.GetTemplateInterfaces(ProtosModelStruct)
-	template := templater.NewTemplate(path, config.External.Output, ifaces, funcMap, elems)
+	output := fmt.Sprintf("pkg/%s/models/models.go", config.External.PackageName)
+	ifaces := templater.GetTemplateInterfaces(daily, requests)
+	template := templater.NewTemplate(path, output, ifaces, funcMap, elems)
 	return template, nil
 }
 

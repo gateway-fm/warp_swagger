@@ -2,6 +2,7 @@ package templater
 
 import (
 	"fmt"
+	"github.com/go-swagger/go-swagger/generator"
 	"github.com/misnaged/annales/logger"
 	"go/format"
 	"io"
@@ -26,11 +27,14 @@ type Template struct {
 }
 
 func ExecHeaderTemplate(output io.Writer) error {
-	t, err := template.ParseFiles("templates/header.gohtml")
+	b, err := os.ReadFile("templates/header.gohtml")
 	if err != nil {
-		return fmt.Errorf("error parsing templaties: %w", err)
+		return fmt.Errorf("failed to read file:%w", err)
 	}
-	if err = t.Execute(output, nil); err != nil {
+	funcMap := generator.FuncMapFunc(generator.DefaultLanguageFunc())
+	t := template.Must(template.New("").Funcs(funcMap).Parse(string(b)))
+
+	if err = t.ExecuteTemplate(output, "", nil); err != nil {
 		return fmt.Errorf("failed to execute template %w", err)
 	}
 	return nil
@@ -42,9 +46,9 @@ func (t *Template) GenerateFile() error {
 	//   as an empty .go file and just "filled up" in this func
 	file, _ := os.Create(t.OutPutFilePath) //
 	defer file.Close()
-	err := ExecHeaderTemplate(file)
-	if err != nil {
-		return fmt.Errorf("header template execution returned an error: %w", err)
+
+	if err := ExecHeaderTemplate(file); err != nil {
+		return fmt.Errorf("failed to exec ExecHeaderTemplate:%w", err)
 	}
 	//   path to template file is absolute here, but it doesn't make any sense :D
 	pattern, _ := filepath.Abs(t.ConfigTemplatePath) //   .gotmpl is used because of IDE's supports only :D
@@ -94,7 +98,7 @@ func GoFmt(path string) error {
 func (t *Template) Generate() error {
 	err := t.GenerateFile()
 	if err != nil {
-		return fmt.Errorf(" GenerateScheme returned an error: %w", err)
+		return fmt.Errorf(" Generate returned an error: %w", err)
 	}
 	err = GoFmt(t.OutPutFilePath)
 	if err != nil {
@@ -108,7 +112,7 @@ func (t *Template) Generate() error {
 func (t *Template) GenerateNonGo() error {
 	err := t.GenerateFile()
 	if err != nil {
-		return fmt.Errorf(" GenerateScheme returned an error: %w", err)
+		return fmt.Errorf(" GenerateNonGo returned an error: %w", err)
 	}
 	return nil
 }

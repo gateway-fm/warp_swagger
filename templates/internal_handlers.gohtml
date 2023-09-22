@@ -1,0 +1,20 @@
+{{define "handler_main"}}
+package handlers
+import (
+// imports are placed automatically
+    "github.com/go-openapi/runtime/middleware"
+
+    ops "{{PackageURL}}/{{OperationsPath}}"
+)
+    func New{{OperationIDuc}}() *{{OperationIDuc}}{
+        return &{{OperationIDuc}}{}
+    }
+    type {{OperationIDuc}} struct {
+
+    }
+
+    func (g *{{OperationIDuc}}) Handle(params ops.{{OperationIDuc}}Params) middleware.Responder {
+
+    }
+
+{{end}}

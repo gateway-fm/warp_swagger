@@ -13,7 +13,7 @@ import (
 
 type IDummy interface {
 	GetHandlersModel() *models.Handlers
-	Call() error
+	Call(cfg string) error
 }
 
 type dummy struct {
@@ -23,21 +23,18 @@ type dummy struct {
 func NewDummy() IDummy {
 	return &dummy{Handlers: models.NewHandler()}
 }
-func (d *dummy) Call() error {
-	d.swag()
+
+func (d *dummy) Call(cfg string) error {
+	d.swag(cfg)
 	return nil
 }
 func (d *dummy) GetHandlersModel() *models.Handlers {
 	return d.Handlers
 }
 
-func (d *dummy) swag() {
+func (d *dummy) swag(cfg string) {
 	logger.Log().Warn("start")
-	cfg := "./example/swagger_dummy.yaml"
 	l, _ := SpecParser(cfg)
-	// if err != nil {
-	//	todo: handle
-	// }
 
 	var paths []string
 

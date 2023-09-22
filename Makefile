@@ -1,5 +1,5 @@
 APP:=warp_swagger
-APP_ENTRY_POINT:=cmd/warp.go
+APP_ENTRY_POINT:=warp.go
 BUILD_OUT_DIR:=./
 GOPRIVATE:=github.com
 

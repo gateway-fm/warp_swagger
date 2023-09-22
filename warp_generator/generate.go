@@ -11,9 +11,9 @@ import (
 )
 
 func Templates(config *config_warp.Warp,
-	simpleNames, simpleTypes, customNames, customTypes []string, handlersModels *models.Handlers) ([]templater.ITemplate, error) {
+	daily, requests []string, handlersModels *models.Handlers) ([]templater.ITemplate, error) {
 	var templates templater.Templates
-	external, err := external_packages.GenerateExternalModels(config, simpleNames, simpleTypes, customNames, customTypes)
+	external, err := external_packages.GenerateExternalModels(config, daily, requests)
 	if err != nil {
 		return nil, fmt.Errorf("failed while collecting templates: %w", err)
 	}
@@ -26,15 +26,13 @@ func Templates(config *config_warp.Warp,
 		}
 		hndlrs = append(hndlrs, hndlr)
 	}
-	mdwrs, err := middlewares.GenerateHandlers(config)
+	mdwrs, err := middlewares.GenerateMdws()
 	if err != nil {
 		return nil, fmt.Errorf("failed while collecting templates: %w", err)
 	}
 	hndlrs = append(hndlrs, external)
 	hndlrs = append(hndlrs, mdwrs)
 	templates = templater.GetAll(hndlrs...)
-	for i := range templates {
-		fmt.Println(templates[i])
-	}
+
 	return templates, nil
 }
