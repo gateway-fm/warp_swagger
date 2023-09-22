@@ -2,7 +2,7 @@ before:
   hooks:
     - go mod tidy
 builds:
-  - main: ./cmd/warp.go
+  - main: ./warp.go
     binary: "warp_swagger"
     env:
       - CGO_ENABLED=0
