@@ -20,10 +20,10 @@ func BytesFromFile(path string) []byte {
 	return b
 }
 
-func GoFiles(pathPart string) []string {
+func GoFiles() []string {
 	cfg := &packages.Config{Mode: packages.NeedFiles}
 	var Goes []string
-	path := fmt.Sprintf("./%s/models", pathPart)
+	path := fmt.Sprintf("./%s/models", "internal")
 	pkgs, err := packages.Load(cfg, path)
 	if err == nil {
 		for _, pkg := range pkgs {
@@ -107,12 +107,12 @@ func unwrapAst(file *ast.File) []string {
 									arrBytes = arrBytes[:len(arrBytes)-1]
 									arrString = "*" + string(arrBytes)
 								}
-								arrString = fmt.Sprintf("[]%s", arrString)
-								fmt.Println(list[iii].Names[namesIdx].String(), arrString)
+								arrString = fmt.Sprintf("[]%s", arrString) //nolint:all
+								// fmt.Println(list[iii].Names[namesIdx].String(), arrString)
 							case *ast.MapType:
-								fmt.Println(list[iii].Names[namesIdx].String(), expression.(*ast.MapType).Key, expression.(*ast.MapType).Value) //nolint:gosimple
+								// fmt.Println(list[iii].Names[namesIdx].String(), expression.(*ast.MapType).Key, expression.(*ast.MapType).Value) //nolint:gosimple
 							case *ast.SliceExpr:
-								fmt.Println(list[iii].Names[namesIdx].String(), expression.(*ast.SliceExpr).X) //nolint:gosimple
+								// fmt.Println(list[iii].Names[namesIdx].String(), expression.(*ast.SliceExpr).X) //nolint:gosimple
 							case *ast.StarExpr:
 								starPart := expression.(*ast.StarExpr).X  //nolint:gosimple
 								starString := fmt.Sprintf("%s", starPart) // we can't use starPart as a string
@@ -130,8 +130,9 @@ func unwrapAst(file *ast.File) []string {
 									starString = fmt.Sprintf("%s.%s", toMerge[0], toMerge[1])
 								}
 								str := fmt.Sprintf("*%s", starString)
-
-								fmt.Println(list[iii].Names[namesIdx].String(), str)
+								if str == "" { //nolint:all
+								}
+								// fmt.Println(list[iii].Names[namesIdx].String(), str)
 							}
 						}
 					}

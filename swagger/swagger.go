@@ -7,21 +7,31 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/codescan"
 	"github.com/misnaged/annales/logger"
+	"go/ast"
+	"go/parser"
+	"go/token"
 	"os"
 	"strings"
 )
 
 type IDummy interface {
 	GetHandlersModel() *models.Handlers
+	GetAPIModel() *models.API
+	GetMapModels() map[string][]string
 	Call(cfg string) error
 }
 
 type dummy struct {
-	Handlers *models.Handlers
+	Handlers  *models.Handlers
+	API       *models.API
+	mapModels map[string][]string
 }
 
+func (d *dummy) GetMapModels() map[string][]string {
+	return d.mapModels
+}
 func NewDummy() IDummy {
-	return &dummy{Handlers: models.NewHandler()}
+	return &dummy{Handlers: models.NewHandler(), API: models.NewAPI(), mapModels: make(map[string][]string)}
 }
 
 func (d *dummy) Call(cfg string) error {
@@ -31,10 +41,13 @@ func (d *dummy) Call(cfg string) error {
 func (d *dummy) GetHandlersModel() *models.Handlers {
 	return d.Handlers
 }
-
+func (d *dummy) GetAPIModel() *models.API {
+	return d.API
+}
 func (d *dummy) swag(cfg string) {
 	logger.Log().Warn("start")
 	l, _ := SpecParser(cfg)
+	d.API.Name = l.Info.Title
 
 	var paths []string
 
@@ -51,9 +64,33 @@ func (d *dummy) swag(cfg string) {
 	for i := range paths {
 		d.Handlers.Operations = append(d.Handlers.Operations, ParseOperations(l.Paths.Paths[paths[i]], pathOperations[i]))
 	}
+	// var defs []string
+	// for v := range l.Definitions {
+	// 	defs = append(defs, inflect.Capitalize(v))
+	// 	// fmt.Println(inflect.Capitalize(a.Title))
+	// }
+	var astFile *ast.File
+	mapBytes := make(map[string][]byte)
+
+	for i := range GoFiles() {
+		mapBytes[GoFiles()[i]] = BytesFromFile(GoFiles()[i])
+	}
+	fset := token.NewFileSet()
+	for k, b := range mapBytes {
+		astFile, _ = parser.ParseFile(fset, "", b, parser.SkipObjectResolution)
+
+		// a = append(a, unwrapAst(astFile)...)
+		k = FortmatName(k)
+		d.mapModels[k] = unwrapAst(astFile)
+	}
 
 }
-
+func FortmatName(toFormat string) string {
+	sArr := strings.Split(toFormat, "/")
+	first := sArr[len(sArr)-1]
+	sArrr := strings.Split(first, ".")
+	return sArrr[0]
+}
 func OperationsPath(part string) string {
 	return fmt.Sprintf("internal/server/operations/%s", part)
 }

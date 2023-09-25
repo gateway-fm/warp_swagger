@@ -1,0 +1,15 @@
+{{define "mocks_main" }}
+package mocks
+
+    import(
+    "{{PackageURL}}/internal/models"
+)
+
+func Fake{{Model}}() *models.{{Model}}{
+    return &models.{{Model}}{
+        {{range Mocks}} {{ . }}:  "fulfil manually!!!",
+            {{end}}
+    }
+}
+
+{{end}}
