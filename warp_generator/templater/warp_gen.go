@@ -47,9 +47,9 @@ func (t *Template) GenerateFile() error {
 	file, _ := os.Create(t.OutPutFilePath) //
 	defer file.Close()
 
-	if err := ExecHeaderTemplate(file); err != nil {
-		return fmt.Errorf("failed to exec ExecHeaderTemplate:%w", err)
-	}
+	//if err := ExecHeaderTemplate(file); err != nil {
+	//	return fmt.Errorf("failed to exec ExecHeaderTemplate:%w", err)
+	//}
 	//   path to template file is absolute here, but it doesn't make any sense :D
 	pattern, _ := filepath.Abs(t.ConfigTemplatePath) //   .gotmpl is used because of IDE's supports only :D
 

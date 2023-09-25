@@ -90,7 +90,7 @@ func (app *App) prepareTemplates() error {
 	if err != nil {
 		return fmt.Errorf("failed to get daily proto message %w", err)
 	}
-	templates, err := warp_generator.Templates(app.WarpCfg(), daily, requests, app.dummy.GetHandlersModel())
+	templates, err := warp_generator.Templates(app.WarpCfg(), daily, requests, app.dummy.GetHandlersModel(), app.dummy.GetAPIModel(), app.dummy.GetMapModels())
 	if err != nil {
 		return fmt.Errorf("%w", err)
 	}

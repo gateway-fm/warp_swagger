@@ -1,0 +1,14 @@
+{{define "app_handlers_main"}}
+    package internal
+
+
+
+    func (app *App) initHandlers(api *operations.{{NameAPI}}API) {
+        {{range OperationIDs}}
+    api.{{ . }}Handler = handlers.New{{ . }}()
+    {{end}}
+    // add here new handler
+
+    }
+
+{{end}}
