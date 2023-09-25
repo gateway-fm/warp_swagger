@@ -3,7 +3,6 @@ package swagger
 import (
 	"fmt"
 	"github.com/gateway-fm/warp_swagger/models"
-	"github.com/go-openapi/inflect"
 	"github.com/go-openapi/loads"
 	"github.com/go-openapi/spec"
 	"github.com/go-swagger/go-swagger/codescan"
@@ -65,11 +64,11 @@ func (d *dummy) swag(cfg string) {
 	for i := range paths {
 		d.Handlers.Operations = append(d.Handlers.Operations, ParseOperations(l.Paths.Paths[paths[i]], pathOperations[i]))
 	}
-	var defs []string
-	for v := range l.Definitions {
-		defs = append(defs, inflect.Capitalize(v))
-		// fmt.Println(inflect.Capitalize(a.Title))
-	}
+	// var defs []string
+	// for v := range l.Definitions {
+	// 	defs = append(defs, inflect.Capitalize(v))
+	// 	// fmt.Println(inflect.Capitalize(a.Title))
+	// }
 	var astFile *ast.File
 	mapBytes := make(map[string][]byte)
 
@@ -80,7 +79,7 @@ func (d *dummy) swag(cfg string) {
 	for k, b := range mapBytes {
 		astFile, _ = parser.ParseFile(fset, "", b, parser.SkipObjectResolution)
 
-		//a = append(a, unwrapAst(astFile)...)
+		// a = append(a, unwrapAst(astFile)...)
 		k = FortmatName(k)
 		d.mapModels[k] = unwrapAst(astFile)
 	}

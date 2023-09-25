@@ -8,7 +8,7 @@ import (
 )
 
 func GenerateAppHandlers(
-	API *models.API,
+	api *models.API,
 	config *config_warp.Warp,
 	operationIDs []string,
 ) (templater.ITemplate, error) {
@@ -26,7 +26,7 @@ func GenerateAppHandlers(
 	}
 
 	var NameAPI = func() string {
-		return API.Name
+		return api.Name
 	}
 	var funcNames = []string{
 		"OperationIDs",
@@ -41,7 +41,7 @@ func GenerateAppHandlers(
 	)
 	funcMap := templater.CompleteFuncMap(funcNames, funcs)
 	elems := "app_handlers_main"
-	ifaces := templater.GetTemplateInterfaces(API)
+	ifaces := templater.GetTemplateInterfaces(api)
 	output := fmt.Sprintf("internal/%s", "app_handlers.go")
 	template := templater.NewTemplate(path, output, ifaces, funcMap, elems)
 	return template, nil

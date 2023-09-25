@@ -13,7 +13,7 @@ import (
 )
 
 func Templates(config *config_warp.Warp,
-	daily, requests []string, handlersModels *models.Handlers, API *models.API, m map[string][]string) ([]templater.ITemplate, error) {
+	daily, requests []string, handlersModels *models.Handlers, api *models.API, m map[string][]string) ([]templater.ITemplate, error) {
 	var templates templater.Templates
 	external, err := external_packages.GenerateExternalModels(config, daily, requests)
 	if err != nil {
@@ -29,8 +29,10 @@ func Templates(config *config_warp.Warp,
 		operIds = append(operIds, handlersModels.Operations[i].OperationID)
 		hndlrs = append(hndlrs, hndlr)
 	}
-	appGen, err := app_gen.GenerateAppHandlers(API, config, operIds)
-
+	appGen, err := app_gen.GenerateAppHandlers(api, config, operIds)
+	if err != nil {
+		return nil, fmt.Errorf("failed while collecting templates: %w", err)
+	}
 	mdwrs, err := middlewares.GenerateMdws()
 	if err != nil {
 		return nil, fmt.Errorf("failed while collecting templates: %w", err)
